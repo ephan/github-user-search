@@ -6,9 +6,15 @@
     "start": "next start"
   },
   "dependencies": {
+    "@octokit/rest": "^19.0.4",
+    "fecha": "^4.2.3",
     "next": "latest",
+    "octokit": "^2.0.7",
     "react": "18.1.0",
-    "react-dom": "18.1.0"
+    "react-dom": "18.1.0",
+    "react-moment": "^1.1.2",
+    "timeago-react": "^3.0.5",
+    "uuidv4": "^6.2.13"
   },
   "devDependencies": {
     "@types/node": "17.0.35",

@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    label {
+        @apply text-gray-500 mr-1
+    }
+    a {
+        @apply text-blue-500 underline cursor-pointer
+    }
+}
