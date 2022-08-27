@@ -10,8 +10,8 @@ type Props = {
 function UserCard({ user }: Props) {
   return (
     <div className="flex lg:basis-[48%] grow shrink-0 md:basis-[99%] sm:basis-[99%] 
-                    m-1 p-4 items-top rounded-md border border-gray-300 bg-white shadow-sm hover:border 
-                    hover:border-gray-600 hover:bg-gray-100 h-[200px]">
+                    lg:mx-1 sm:mx-0 my-1 p-4 items-top rounded-md border border-gray-300 bg-white shadow-sm hover:border 
+                    hover:border-gray-600 hover:bg-gray-100 h-[200px] truncate overflow-hidden w-full">
       <Image
         height="128px"
         width="128px"
@@ -36,7 +36,7 @@ function UserCard({ user }: Props) {
           </div>
         )}
         {user.email && (
-          <div className="">
+          <div>
             <label>Email:</label>{user.email}
           </div>
         )}
@@ -48,7 +48,7 @@ function UserCard({ user }: Props) {
             </a>
           </Link>
         </div>
-        <div className="">
+        <div>
           <label>Number of Repos:</label>
           <Link href={user.html_url + "?tab=repositories"} passHref>
             <a className="ml-1" target="_blank">
@@ -56,13 +56,13 @@ function UserCard({ user }: Props) {
             </a>
           </Link>
         </div>
-        <div className="">
+        <div className="truncate">
           <label>Created:</label>
-          <Moment format="MMMM Do YYYY, h:mma">{user.created_at}</Moment>
+          <Moment className="truncate" format="MMMM Do YYYY, h:mma">{user.created_at}</Moment>
         </div>
-        <div className="">
+        <div className="truncate">
           <label>Updated:</label>
-          <Moment format="MMMM Do YYYY, h:mma">{user.updated_at}</Moment>
+          <Moment className="truncate" format="MMMM Do YYYY, h:mma">{user.updated_at}</Moment>
         </div>
       </div>
     </div>

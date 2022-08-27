@@ -128,10 +128,10 @@ const Home: NextPage = () => {
 
       {/* Search */}
       <main className="sticky top-0 z-50 flex bg-white px-0 py-2 shadow-sm">
-        <form className="w-full pl-1" onSubmit={(e) => handleSubmit(e)}>
+        <form className="w-full lg:pl-1 sm:pl-0" onSubmit={(e) => handleSubmit(e)}>
           <input
             type="text"
-            className="border rounded p-1 grow shrink-0 w-[50%] hover:shadow"
+            className="border rounded p-1 w-[50%] hover:shadow"
             placeholder="Search name, email address, username, etc..."
             value={form.searchText}
             onChange={(e) => setForm({ ...form, searchText: e.target.value })}
@@ -153,7 +153,7 @@ const Home: NextPage = () => {
       </div>
 
       {/* Pagination */}
-      <div>
+      <div className="py-3 lg:pl-1 sm:pl-0">
         {currentPage > 1 && (
           <Link href="/">
             <a className="pr-5"
