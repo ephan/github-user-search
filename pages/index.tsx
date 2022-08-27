@@ -21,6 +21,7 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     if (form?.searchText !== "") getData(form?.searchText);
+   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
   const getData = (searchText: string) => {

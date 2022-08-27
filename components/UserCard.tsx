@@ -10,7 +10,7 @@ type Props = {
 function UserCard({ user }: Props) {
   return (
     <div className="flex lg:basis-[48%] grow shrink-0 md:basis-[99%] sm:basis-[99%] 
-                    m-1 p-5 items-top rounded-md border border-gray-300 bg-white shadow-sm hover:border 
+                    m-1 p-4 items-top rounded-md border border-gray-300 bg-white shadow-sm hover:border 
                     hover:border-gray-600 hover:bg-gray-100 h-[200px]">
       <Image
         height="128px"
@@ -18,6 +18,7 @@ function UserCard({ user }: Props) {
         src={user.avatar_url}
         layout="fixed"
         className="top-1"
+        alt={user.login}
       />
       <div className="ml-5">
         {user.name && (
