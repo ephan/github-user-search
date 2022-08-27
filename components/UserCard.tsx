@@ -36,7 +36,7 @@ function UserCard({ user }: Props) {
         )}
         {user.email && (
           <div className="">
-            <label>Email:</label> {user.email}
+            <label>Email:</label>{user.email}
           </div>
         )}
         <div>

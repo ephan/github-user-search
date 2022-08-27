@@ -1,4 +1,4 @@
-import type { GetServerSideProps, NextPage } from "next";
+import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import { format } from "path";
@@ -11,7 +11,7 @@ type FormData = {
   searchText: string;
 };
 
-const RESULTS_PER_PAGE = 5;
+const RESULTS_PER_PAGE = 10;
 
 const Home: NextPage = () => {
   const [form, setForm] = useState<FormData>({ searchText: "" });
@@ -24,14 +24,14 @@ const Home: NextPage = () => {
   }, [currentPage]);
 
   const getData = (searchText: string) => {
-    const retrievedData = window.localStorage.getItem(
+    const retrievedData = localStorage.getItem(
       JSON.stringify({ search: searchText, page: currentPage })
     );
     if (retrievedData) {
       setResults(JSON.parse(retrievedData));
       setTotalPages(
         parseInt(
-          window.localStorage.getItem(
+          localStorage.getItem(
             JSON.stringify({
               search: searchText,
               page: currentPage,
@@ -49,7 +49,7 @@ const Home: NextPage = () => {
 
     // '/search/users' API returns up to 30 results at a time, but we specify the RESULTS_PER_PAGE
     // this api only returns partial list of user data, we need a 2nd api call
-    const data = octokit
+    octokit
       .request("GET /search/users", {
         q: searchText,
         page: currentPage,
@@ -63,41 +63,46 @@ const Home: NextPage = () => {
 
           //call second api for each user returned
           const urls = data?.data?.items.map(
-            (user) => `https://api.github.com/users/${user.login}`
+            (user) => `GET /users/${user.login}`
           );
 
           //Promise.all ensures we get results all at once
-          Promise.all(urls.map((u) => fetch(u)))
-            .then((responses) =>
-              Promise.all(responses.map((res) => res.json())).catch(
-                (err) => console.log
-              )
+          Promise.all(
+            urls.map((url) =>
+              octokit.request(url, {
+                username: "USERNAME",
+              })
             )
-            .then((jsonData) => {
-              if (jsonData && Array.isArray(jsonData)) {
-                setResults(jsonData);
-                //cache results
-                window.localStorage.setItem(
-                  JSON.stringify({ search: searchText, page: currentPage }),
-                  JSON.stringify(jsonData)
-                );
-                window.localStorage.setItem(
-                  JSON.stringify({
-                    search: searchText,
-                    page: currentPage,
-                    getTotalPages: 1,
-                  }),
-                  computedTotalPages.toString()
-                );
-              }
-            })
-            .catch((err) => {
-              console.log(err);
-            });
+          )
+          .then((jsonData) => {
+            if (jsonData && Array.isArray(jsonData)) {
+              jsonData = jsonData.map((user) => user.data);
+              setResults(jsonData as unknown as ResultData[]); //typescript :)
+
+              //cache results - I'm caching both the data and the number of pages
+              localStorage.setItem(
+                JSON.stringify({ search: searchText, page: currentPage }),
+                JSON.stringify(jsonData)
+              );
+              localStorage.setItem(
+                JSON.stringify({
+                  search: searchText,
+                  page: currentPage,
+                  getTotalPages: 1,
+                }),
+                computedTotalPages.toString()
+              );
+            }
+          })
+          .catch((err) => {
+            setTotalPages(0); //removes pagination links
+            alert(err);
+          });
         }
       })
       .catch((err) => {
-        console.log(err);
+        setTotalPages(0); //removes pagination links
+        alert(err);
       });
   };
 
@@ -122,7 +127,7 @@ const Home: NextPage = () => {
 
       {/* Search */}
       <main className="sticky top-0 z-50 flex bg-white px-0 py-2 shadow-sm">
-        <form className="w-full" onSubmit={(e) => handleSubmit(e)}>
+        <form className="w-full pl-1" onSubmit={(e) => handleSubmit(e)}>
           <input
             type="text"
             className="border rounded p-1 grow shrink-0 w-[50%] hover:shadow"
@@ -145,14 +150,13 @@ const Home: NextPage = () => {
           <UserCard user={user} key={user.login} />
         ))}
       </div>
+
       {/* Pagination */}
       <div>
         {currentPage > 1 && (
           <Link href="/">
-            <a
-              className="pr-5"
-              onClick={(e) => handlePaginationClick(e, currentPage - 1)}
-            >
+            <a className="pr-5"
+               onClick={(e) => handlePaginationClick(e, currentPage - 1)}>
               Prev
             </a>
           </Link>
@@ -165,15 +169,9 @@ const Home: NextPage = () => {
           </Link>
         )}
       </div>
+
     </div>
   );
 };
 
 export default Home;
-
-export const getServerSideProps: GetServerSideProps = async () => {
-  //no data to pre-render
-  return {
-    props: {},
-  };
-};
