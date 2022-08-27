@@ -11,16 +11,16 @@ function UserCard({ user }: Props) {
   return (
     <div className="flex lg:basis-[48%] grow shrink-0 md:basis-[99%] sm:basis-[99%] 
                     lg:mx-1 sm:mx-0 my-1 p-4 items-top rounded-md border border-gray-300 bg-white shadow-sm hover:border 
-                    hover:border-gray-600 hover:bg-gray-100 h-[200px] truncate overflow-hidden w-full">
+                    hover:border-gray-600 hover:bg-gray-100 lg:h-[200px] truncate overflow-hidden w-full">
       <Image
         height="128px"
         width="128px"
         src={user.avatar_url}
         layout="fixed"
-        className="top-1"
+        className="top-1 h-[128px] !min-w-[128px]"
         alt={user.login}
       />
-      <div className="ml-5">
+      <div className="ml-5 truncate">
         {user.name && (
           <div>
             <label>Name:</label>

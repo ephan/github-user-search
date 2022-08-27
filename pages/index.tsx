@@ -153,7 +153,7 @@ const Home: NextPage = () => {
       </div>
 
       {/* Pagination */}
-      <div className="py-3 lg:pl-1 sm:pl-0">
+      <div className="py-3 pl-1">
         {currentPage > 1 && (
           <Link href="/">
             <a className="pr-5"
