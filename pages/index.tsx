@@ -21,11 +21,10 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     if (form?.searchText !== "") getData(form?.searchText);
-   // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
-  const getData = (searchText: string) => {
-
+  const getData = async (searchText: string) => {
     //check to see if the {searchText, currentPage} key exsists in localStorage
     const retrievedData = localStorage.getItem(
       JSON.stringify({ search: searchText, page: currentPage })
@@ -36,64 +35,58 @@ const Home: NextPage = () => {
       return;
     }
 
-    const octokit = new Octokit({
-      auth: process.env.GITHUB_SECRET,
-    });
+    try {
+      const octokit = new Octokit({
+        auth: process.env.GITHUB_SECRET,
+      });
 
-    // '/search/users' API returns up to 30 results at a time, but we specify the RESULTS_PER_PAGE
-    // this api only returns partial list of user data, we need a 2nd api call
-    octokit
-      .request("GET /search/users", {
+      // octokit.search.users() returns up to 30 results at a time, but we specify the RESULTS_PER_PAGE
+      // this api only returns partial list of user data, we need a 2nd api call to get the full user data
+      const searchUserData = await octokit.search.users({
         q: searchText,
         page: currentPage,
         per_page: RESULTS_PER_PAGE,
-      })
-      .then((data) => {
-        if (data?.data?.items) {
-          const computedTotalPages =
-            Math.floor((data?.data?.total_count || 0) / RESULTS_PER_PAGE) + 1;
-          setTotalPages(computedTotalPages);
-
-          //call second api for each user returned
-          const urls = data?.data?.items.map(
-            (user) => `GET /users/${user.login}`
-          );
-
-          //Promise.all ensures we get results all at once
-          Promise.all(
-            urls.map((url) =>
-              octokit.request(url, {
-                username: "USERNAME",
-              })
-            )
-          )
-          .then((jsonData) => {
-            if (jsonData && Array.isArray(jsonData)) {
-              jsonData = jsonData.map((user) => user.data);
-              setResults(jsonData as unknown as ResultData[]); //typescript :)
-
-              //cache results - I'm caching both the data and the number of pages
-              //key : { search: searchText, page: currentPage }
-              //value : { data: jsonData, totalPages: computedTotalPages }
-              localStorage.setItem(
-                JSON.stringify({ search: searchText, page: currentPage }),
-                JSON.stringify({
-                  data: jsonData,
-                  totalPages: computedTotalPages,
-                })
-              );
-            }
-          })
-          .catch((err) => {
-            setTotalPages(0); //removes pagination links
-            alert(err);
-          });
-        }
-      })
-      .catch((err) => {
-        setTotalPages(0); //removes pagination links
-        alert(err);
       });
+
+      if (searchUserData?.data?.items) {
+        const computedTotalPages =
+          Math.floor((searchUserData?.data?.total_count || 0) / RESULTS_PER_PAGE) + 1;
+        setTotalPages(computedTotalPages);
+
+        //call second api for each user returned
+        const urls = searchUserData?.data?.items.map(
+          (user) => `GET /users/${user.login}`
+        );
+
+        //Promise.all ensures we get results all at once
+        let resultData = await Promise.all(
+          urls.map((url) =>
+            octokit.request(url, {
+              username: "USERNAME",
+            })
+          )
+        );
+
+        if (resultData && Array.isArray(resultData)) {
+          const userData: ResultData[] = resultData.map((user) => user.data);
+          setResults(userData);
+
+          //cache results - I'm caching both the data and the number of pages
+          //key : { search: searchText, page: currentPage }
+          //value : { data: jsonData, totalPages: computedTotalPages }
+          localStorage.setItem(
+            JSON.stringify({ search: searchText, page: currentPage }),
+            JSON.stringify({
+              data: userData,
+              totalPages: computedTotalPages,
+            })
+          );
+        }
+      }
+    } catch (error) {
+      setTotalPages(0); //removes pagination next links
+      alert(error);
+    }
   };
 
   const handleSubmit = (e: FormEvent) => {
@@ -117,7 +110,10 @@ const Home: NextPage = () => {
 
       {/* Search */}
       <main className="sticky top-0 z-50 flex bg-white px-0 py-2 shadow-sm">
-        <form className="w-full lg:pl-1 sm:pl-0" onSubmit={(e) => handleSubmit(e)}>
+        <form
+          className="w-full lg:pl-1 sm:pl-0"
+          onSubmit={(e) => handleSubmit(e)}
+        >
           <input
             type="text"
             className="border rounded p-1 w-[50%] hover:shadow"
@@ -145,8 +141,10 @@ const Home: NextPage = () => {
       <div className="py-3 pl-1">
         {currentPage > 1 && (
           <Link href="/">
-            <a className="pr-5"
-               onClick={(e) => handlePaginationClick(e, currentPage - 1)}>
+            <a
+              className="pr-5"
+              onClick={(e) => handlePaginationClick(e, currentPage - 1)}
+            >
               Prev
             </a>
           </Link>
@@ -159,7 +157,6 @@ const Home: NextPage = () => {
           </Link>
         )}
       </div>
-
     </div>
   );
 };
