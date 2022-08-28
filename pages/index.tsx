@@ -11,7 +11,7 @@ type FormData = {
   searchText: string;
 };
 
-const RESULTS_PER_PAGE = 10;
+const RESULTS_PER_PAGE = 8;
 
 const Home: NextPage = () => {
   const [form, setForm] = useState<FormData>({ searchText: "" });
@@ -25,22 +25,14 @@ const Home: NextPage = () => {
   }, [currentPage]);
 
   const getData = (searchText: string) => {
+
+    //check to see if the {searchText, currentPage} key exsists in localStorage
     const retrievedData = localStorage.getItem(
       JSON.stringify({ search: searchText, page: currentPage })
     );
     if (retrievedData) {
-      setResults(JSON.parse(retrievedData));
-      setTotalPages(
-        parseInt(
-          localStorage.getItem(
-            JSON.stringify({
-              search: searchText,
-              page: currentPage,
-              getTotalPages: 1,
-            })
-          ) || "1"
-        )
-      );
+      setResults(JSON.parse(retrievedData)?.data || {});
+      setTotalPages(JSON.parse(retrievedData)?.totalPages || 1);
       return;
     }
 
@@ -81,17 +73,14 @@ const Home: NextPage = () => {
               setResults(jsonData as unknown as ResultData[]); //typescript :)
 
               //cache results - I'm caching both the data and the number of pages
+              //key : { search: searchText, page: currentPage }
+              //value : { data: jsonData, totalPages: computedTotalPages }
               localStorage.setItem(
                 JSON.stringify({ search: searchText, page: currentPage }),
-                JSON.stringify(jsonData)
-              );
-              localStorage.setItem(
                 JSON.stringify({
-                  search: searchText,
-                  page: currentPage,
-                  getTotalPages: 1,
-                }),
-                computedTotalPages.toString()
+                  data: jsonData,
+                  totalPages: computedTotalPages,
+                })
               );
             }
           })
@@ -116,7 +105,7 @@ const Home: NextPage = () => {
 
   const handlePaginationClick = (e: FormEvent, newPage: number) => {
     e.preventDefault();
-    setCurrentPage(newPage);
+    setCurrentPage(newPage); //useEffect will be triggered
   };
 
   return (
