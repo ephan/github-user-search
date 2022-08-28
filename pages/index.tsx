@@ -4,14 +4,14 @@ import Image from "next/image";
 import { format } from "path";
 import { FormEvent, useState, useEffect } from "react";
 import { Octokit } from "@octokit/rest";
-import Link from "next/link";
 import UserCard from "../components/UserCard";
+import Pagination from "../components/Pagination";
 
 type FormData = {
   searchText: string;
 };
 
-const RESULTS_PER_PAGE = 8;
+const RESULTS_PER_PAGE = 9;
 
 const Home: NextPage = () => {
   const [form, setForm] = useState<FormData>({ searchText: "" });
@@ -30,7 +30,7 @@ const Home: NextPage = () => {
       JSON.stringify({ search: searchText, page: currentPage })
     );
     if (retrievedData) {
-      setResults(JSON.parse(retrievedData)?.data || {});
+      setResults(JSON.parse(retrievedData)?.data || []);
       setTotalPages(JSON.parse(retrievedData)?.totalPages || 1);
       return;
     }
@@ -50,7 +50,9 @@ const Home: NextPage = () => {
 
       if (searchUserData?.data?.items) {
         const computedTotalPages =
-          Math.floor((searchUserData?.data?.total_count || 0) / RESULTS_PER_PAGE) + 1;
+          Math.floor(
+            (searchUserData?.data?.total_count || 0) / RESULTS_PER_PAGE
+          ) + 1;
         setTotalPages(computedTotalPages);
 
         //call second api for each user returned
@@ -131,32 +133,18 @@ const Home: NextPage = () => {
       </main>
 
       {/* Results */}
-      <div className="flex flex-wrap">
+      <div className="flex flex-wrap justify-center">
         {results?.map((user) => (
           <UserCard user={user} key={user.login} />
         ))}
       </div>
 
       {/* Pagination */}
-      <div className="py-3 pl-1">
-        {currentPage > 1 && (
-          <Link href="/">
-            <a
-              className="pr-5"
-              onClick={(e) => handlePaginationClick(e, currentPage - 1)}
-            >
-              Prev
-            </a>
-          </Link>
-        )}
-        {totalPages > currentPage && (
-          <Link href="/">
-            <a onClick={(e) => handlePaginationClick(e, currentPage + 1)}>
-              Next
-            </a>
-          </Link>
-        )}
-      </div>
+      <Pagination
+        totalPages={totalPages}
+        currentPage={currentPage}
+        handlePaginationClick={handlePaginationClick}
+      />
     </div>
   );
 };

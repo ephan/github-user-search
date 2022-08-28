@@ -1,3 +1,4 @@
+import { MapPinIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -9,29 +10,33 @@ type Props = {
 
 function UserCard({ user }: Props) {
   return (
-    <div className="flex lg:basis-[48%] grow shrink-0 md:basis-[99%] sm:basis-[99%] 
+    <div className="flex lg:basis-[32%] grow shrink-0 md:basis-[99%] sm:basis-[99%]
                     lg:mx-1 sm:mx-0 my-1 lg:p-4 sm:p-2 items-top rounded-md border border-gray-300 bg-white shadow-sm hover:border 
                     hover:border-gray-600 hover:bg-gray-100 lg:h-[200px] truncate overflow-hidden w-full">
+
+      <div className="self-center shadow-2xl">
       <Image
         height="128px"
         width="128px"
         src={user.avatar_url}
         layout="fixed"
-        className="top-1 h-[128px] !min-w-[128px]"
+        className="top-1 h-[128px] !min-w-[128px] self-center"
         alt={user.login}
       />
-      <div className="ml-3 truncate w-[calc(100%-128px)]">
+
+      </div>
+      <div className="ml-3 truncate w-[calc(100%-128px)] text-xs self-center">
         {user.name && (
           <div>
             <label>Name:</label>
-            <Link className="block" href={user.html_url} passHref>
-              <a target="_blank">{user.name}</a>
-            </Link>
+              {user.name}
           </div>
         )}
         {user.location && (
           <div className="">
-            <label>Location:</label>
+            <label>
+              <MapPinIcon className="w-4 h-4 inline-block" />
+            </label>
             {user.location}
           </div>
         )}
