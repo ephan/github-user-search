@@ -12,9 +12,6 @@ type FormData = {
   sort: string;
 };
 
-type SortBy = "followers" | "repositories" | "joined" | undefined;
-type SortOrder = "asc" | "desc" | undefined;
-
 const RESULTS_PER_PAGE = 9;
 
 const Home: NextPage = () => {
@@ -39,7 +36,6 @@ const Home: NextPage = () => {
   }, [noResults]);
 
   const getData = async (searchText: string) => {
-
     //check to see if the {form, currentPage} key exists in localStorage
     const retrievedData = localStorage.getItem(
       JSON.stringify({ search: form, page: currentPage })
@@ -58,64 +54,35 @@ const Home: NextPage = () => {
     }
 
     try {
-      const octokit = new Octokit({
-        auth: process.env.GITHUB_SECRET,
-      });
-
       //split form.sort "sort order" into two arrays
       const [sortBy, sortOrder] = form.sort.split(" ");
 
-      // octokit.search.users() returns up to 30 results at a time, but we specify the RESULTS_PER_PAGE
-      // this api only returns partial list of user data, we need a 2nd api call to get the full user data
-      const searchUserData = await octokit.search.users({
-        q: searchText,
-        page: currentPage,
-        per_page: RESULTS_PER_PAGE,
-        sort: sortBy as SortBy,
-        order: sortOrder as SortOrder,
-      });
+      let fetchData = await fetch(`/api/githubUsers?q=${searchText}&page=${currentPage}&per_page=${RESULTS_PER_PAGE}&sort=${sortBy}&order=${sortOrder}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then(async (res) => await res.json());; 
 
-      if (searchUserData?.data?.items?.length > 0) {
-        //computing the total number of pages
-        let computedTotalPages = Math.floor(
-          (searchUserData?.data?.total_count || 0) / RESULTS_PER_PAGE
+      const userData = fetchData.data;
+      const computedTotalPages = fetchData.totalPages;
+
+      if (userData && Array.isArray(userData)) {
+        setResults(userData);
+
+        //cache results - I'm caching both the data and the number of pages
+        //key : { search: form, page: currentPage }
+        //value : { data: userData, totalPages: computedTotalPages }
+        localStorage.setItem(
+          JSON.stringify({ search: form, page: currentPage }),
+          JSON.stringify({
+            data: userData,
+            totalPages: computedTotalPages,
+          })
         );
-        if (searchUserData?.data?.items?.length % RESULTS_PER_PAGE > 0)
-          computedTotalPages++;
-        setTotalPages(computedTotalPages);
-
-        //call second api for each user returned
-        const urls = searchUserData?.data?.items.map(
-          (user) => `GET /users/${user.login}`
-        );
-
-        //Promise.all ensures we get results all at once
-        let resultData = await Promise.all(
-          urls.map((url) =>
-            octokit.request(url, {
-              username: "USERNAME",
-            })
-          )
-        );
-
-        if (resultData && Array.isArray(resultData)) {
-          const userData: ResultData[] = resultData.map((user) => user.data);
-          setResults(userData);
-          setNoResults(false);
-
-          //cache results - I'm caching both the data and the number of pages
-          //key : { search: form, page: currentPage }
-          //value : { data: userData, totalPages: computedTotalPages }
-          localStorage.setItem(
-            JSON.stringify({ search: form, page: currentPage }),
-            JSON.stringify({
-              data: userData,
-              totalPages: computedTotalPages,
-            })
-          );
-        }
-      } else { //no results
-        setNoResults(true);
+        
+        if (userData.length === 0) setNoResults(true);
+        else setNoResults(false);
       }
     } catch (error) {
       setTotalPages(0); //removes pagination next links
