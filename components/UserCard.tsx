@@ -10,7 +10,7 @@ type Props = {
 
 function UserCard({ user }: Props) {
   return (
-    <div className="flex lg:basis-[32%] grow shrink-0 md:basis-[99%] sm:basis-[99%]
+    <div className="flex lg:basis-[32%] grow shrink-0 md:basis-[98%] sm:basis-[98%]
                     lg:mx-1 sm:mx-0 my-1 lg:p-4 sm:p-2 items-top rounded-md border border-gray-300 bg-white shadow-sm hover:border 
                     hover:border-gray-600 hover:bg-gray-100 lg:h-[200px] truncate overflow-hidden w-full">
 
