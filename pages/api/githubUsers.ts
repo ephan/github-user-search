@@ -1,6 +1,11 @@
 import { Octokit } from "@octokit/rest";
+import type { NextApiRequest, NextApiResponse } from 'next'
 
-export default async function handler(req: Request, res: Response) {
+type SortBy = "followers" | "repositories" | "joined" | undefined;
+type SortOrder = "asc" | "desc" | undefined;
+
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { q, page, per_page, sort, order } = req.query;
 
   if (!q) {
@@ -16,11 +21,11 @@ export default async function handler(req: Request, res: Response) {
     // octokit.search.users() returns up to 30 results at a time, but we specify the RESULTS_PER_PAGE
     // this api only returns partial list of user data, we need a 2nd api call to get the full user data
     const searchUserData = await octokit.search.users({
-      q: q,
-      page: page,
-      per_page: per_page,
-      sort: sort,
-      order: order,
+      q: q as string,
+      page: page ? parseInt(page as string) : undefined,
+      per_page: per_page ? parseInt(<string>per_page) : undefined,
+      sort: sort as SortBy,
+      order: order as SortOrder,
     });
 
     if (searchUserData?.data?.items?.length > 0) {
