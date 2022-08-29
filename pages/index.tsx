@@ -15,7 +15,7 @@ type FormData = {
 type SortBy = "followers" | "repositories" | "joined" | undefined;
 type SortOrder = "asc" | "desc" | undefined;
 
-const RESULTS_PER_PAGE = 3;
+const RESULTS_PER_PAGE = 9;
 
 const Home: NextPage = () => {
   const [form, setForm] = useState<FormData>({ searchText: "", sort: "" });
