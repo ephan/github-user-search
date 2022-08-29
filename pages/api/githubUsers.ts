@@ -31,9 +31,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (searchUserData?.data?.items?.length > 0) {
       //computing the total number of pages
       let computedTotalPages = Math.floor(
-        (searchUserData?.data?.total_count || 0) / per_page
+        (searchUserData?.data?.total_count || 0) / parseInt(<string>per_page)
       );
-      if (searchUserData?.data?.items?.length % per_page > 0)
+      if (searchUserData?.data?.items?.length % parseInt(<string>per_page) > 0)
         computedTotalPages++;
 
       //call second api for each user returned
