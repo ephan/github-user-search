@@ -64,27 +64,26 @@ const Home: NextPage = () => {
         },
       }).then(async (res) => await res.json());; 
 
-      const userData = fetchData.data;
-      const computedTotalPages = fetchData.totalPages;
+      const userData = fetchData.data || [];
+      const computedTotalPages = fetchData.totalPages || 1;
 
-      if (userData && Array.isArray(userData)) {
-        setResults(userData);
-        setTotalPages(computedTotalPages);
+      setResults(userData);
+      setTotalPages(computedTotalPages);
 
-        //cache results - I'm caching both the data and the number of pages
-        //key : { search: form, page: currentPage }
-        //value : { data: userData, totalPages: computedTotalPages }
-        localStorage.setItem(
-          JSON.stringify({ search: form, page: currentPage }),
-          JSON.stringify({
-            data: userData,
-            totalPages: computedTotalPages,
-          })
-        );
-        
-        if (userData.length === 0) setNoResults(true);
-        else setNoResults(false);
-      }
+      //cache results - I'm caching both the data and the number of pages
+      //key : { search: form, page: currentPage }
+      //value : { data: userData, totalPages: computedTotalPages }
+      localStorage.setItem(
+        JSON.stringify({ search: form, page: currentPage }),
+        JSON.stringify({
+          data: userData,
+          totalPages: computedTotalPages,
+        })
+      );
+      
+      if (userData.length === 0) setNoResults(true);
+      else setNoResults(false);
+    
     } catch (error) {
       setTotalPages(0); //removes pagination next links
       alert(error);
