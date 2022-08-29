@@ -69,6 +69,7 @@ const Home: NextPage = () => {
 
       if (userData && Array.isArray(userData)) {
         setResults(userData);
+        setTotalPages(computedTotalPages);
 
         //cache results - I'm caching both the data and the number of pages
         //key : { search: form, page: currentPage }
